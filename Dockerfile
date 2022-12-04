@@ -1,4 +1,4 @@
-FROM rogerpq/RepthonAr:slim-buster
+FROM rick1128/rickf:slim-buster
 
 #clonning repo 
 RUN git clone https://github.com/rick1128/rickf /root/jepthon
