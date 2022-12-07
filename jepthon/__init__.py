@@ -1,30 +1,40 @@
+import signal
+import sys
 import time
 
 import heroku3
 
 from .Config import Config
 from .core.logger import logging
-from .core.session import jepiq
+from .core.session import jepiq, tgbot
+from .helpers.functions.converter import Convert
+from .helpers.functions.musictool import *
+from .helpers.utils.utils import runasync
 from .sql_helper.globals import addgvar, delgvar, gvarstatus
 
-__version__ = "1.0.0"
-__license__ = "كـتابة وتـعديل فريـق ريك ثون"
-__author__ = "ريك ثون <https://T.ME/RICKTHON>"
-__copyright__ = "RICKTHON TEAM (C) 2020 - 2021  " + __author__
-
+__version__ = "3.2.0"
+__license__ = "GNU Affero General Public License v3.0"
+__author__ = "سورس ريك ثون <https://github.com/rick1128/rickf>"
+__copyright__ = f" حقوق سورس ريك ثون (C) 2020 - 2022  {__author__}"
 jepiq.version = __version__
 jepiq.tgbot.version = __version__
-LOGS = logging.getLogger("𝐑𝐈𝐂𝐊𝐓𝐇𝐎𝐍")
-bot = jepiq
+LOGS = logging.getLogger("سورس ريك ثون")
+bot = sbb_b
+tbot = tgbot
 
 StartTime = time.time()
-JEPVERSION = "3.1.3"
+JEPVERSION = "5.1.0"
 
 
-if Config.UPSTREAM_REPO == "Rick":
-    UPSTREAM_REPO_URL = "https://github.com/rick1128/rickf"
-else:
-    UPSTREAM_REPO_URL = Config.UPSTREAM_REPO
+def close_connection(*_):
+    print("تم اغلاق الاتصال بالسورس")
+    runasync(sbb_b.disconnect())
+    sys.exit(143)
+
+
+signal.signal(signal.SIGTERM, close_connection)
+
+UPSTREAM_REPO_URL = Config.UPSTREAM_REPO
 
 if Config.PRIVATE_GROUP_BOT_API_ID == 0:
     if gvarstatus("PRIVATE_GROUP_BOT_API_ID") is None:
@@ -36,7 +46,7 @@ if Config.PRIVATE_GROUP_BOT_API_ID == 0:
         Config.BOTLOG = True
 else:
     if str(Config.PRIVATE_GROUP_BOT_API_ID)[0] != "-":
-        Config.BOTLOG_CHATID = int("-" + str(Config.PRIVATE_GROUP_BOT_API_ID))
+        Config.BOTLOG_CHATID = int(f"-{str(Config.PRIVATE_GROUP_BOT_API_ID)}")
     else:
         Config.BOTLOG_CHATID = Config.PRIVATE_GROUP_BOT_API_ID
     Config.BOTLOG = True
@@ -47,7 +57,8 @@ if Config.PM_LOGGER_GROUP_ID == 0:
     else:
         Config.PM_LOGGER_GROUP_ID = int(gvarstatus("PM_LOGGER_GROUP_ID"))
 elif str(Config.PM_LOGGER_GROUP_ID)[0] != "-":
-    Config.PM_LOGGER_GROUP_ID = int("-" + str(Config.PM_LOGGER_GROUP_ID))
+    Config.PM_LOGGER_GROUP_ID = int(f"-{str(Config.PM_LOGGER_GROUP_ID)}")
+
 try:
     if Config.HEROKU_API_KEY is not None or Config.HEROKU_APP_NAME is not None:
         HEROKU_APP = heroku3.from_key(Config.HEROKU_API_KEY).apps()[
@@ -59,7 +70,7 @@ except Exception:
     HEROKU_APP = None
 
 
-# Global Configiables
+# تعريفات مهمة
 COUNT_MSG = 0
 USERS = {}
 COUNT_PM = {}
@@ -69,11 +80,10 @@ ISAFK = False
 AFKREASON = None
 CMD_LIST = {}
 SUDO_LIST = {}
-# for later purposes
 INT_PLUG = ""
 LOAD_PLUG = {}
 
-# Variables
+# متغيرات
 BOTLOG = Config.BOTLOG
 BOTLOG_CHATID = Config.BOTLOG_CHATID
 PM_LOGGER_GROUP_ID = Config.PM_LOGGER_GROUP_ID
