@@ -1,91 +1,86 @@
 import sys
+
+from aiohttp import web
+
 import jepthon
-from jepthon import BOTLOG_CHATID, HEROKU_APP, PM_LOGGER_GROUP_ID
+from jepthon import BOTLOG_CHATID, PM_LOGGER_GROUP_ID, tbot
+
 from .Config import Config
 from .core.logger import logging
+from .core.server import web_server
 from .core.session import jepiq
 from .utils import (
     add_bot_to_logger_group,
-    install_externalrepo,
-    ipchange,
     load_plugins,
-    setup_bot,
     mybot,
+    saves,
+    setup_bot,
     startupmessage,
     verifyLoggerGroup,
-    saves,
 )
 
-LOGS = logging.getLogger("𝐑𝐈𝐂𝐊𝐓𝐇𝐎𝐍")
-
-print(jepthon.__copyright__)
-print("Licensed under the terms of the " + jepthon.__license__)
+LOGS = logging.getLogger("سورس ريك ثون")
 
 cmdhr = Config.COMMAND_HAND_LER
 
-try:
-    LOGS.info("جارِ بدء بوت ريك ثون ✓")
-    jepiq.loop.run_until_complete(setup_bot())
-    LOGS.info("تم اكتمال تنصيب البوت ✓")
-except Exception as e:
-    LOGS.error(f"{str(e)}")
-    sys.exit()
 
-try:
-    LOGS.info("يتم تفعيل وضع الانلاين")
-    jepiq.loop.run_until_complete(mybot())
-    LOGS.info("تم تفعيل وضع الانلاين بنجاح ✓")
-except Exception as jep:
-    LOGS.error(f"- {jep}")
-    sys.exit()    
+async def jepthons(session=None, client=None, session_name="Main"):
+    if session:
+        LOGS.info(f"••• جار بدأ الجلسة [{session_name}] •••")
+        try:
+            await client.start()
+            return 1
+        except:
+            LOGS.error(f"خطأ في الجلسة {session_name}!! تأكد وحاول مجددا !")
+            return 0
+    else:
+        return 0
 
 
-class CatCheck:
-    def __init__(self):
-        self.sucess = True
-
-
-Catcheck = CatCheck()
-
-
-async def startup_process():
-    check = await ipchange()
-    if check is not None:
-        Catcheck.sucess = False
-        return
+# تأكد من تنصيب بعض الاكواد
+async def jepthonstart(total):
+    await setup_bot()
+    await mybot()
     await verifyLoggerGroup()
-    await load_plugins("plugins")
-    await load_plugins("assistant")
-    print("➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖")
-    print("⌯︙بـوت ريك ثون يعـمل بـنجاح ")
-    print(
-        f"تم تشغيل الانلاين تلقائياً ارسل {cmdhr}فحص لـرؤيـة اذا كـان البوت شـغال\
-        \nللمسـاعدة تواصـل  https://t.me/rickthon_group"
-    )
-    print("➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖")
-    await verifyLoggerGroup()
-    await saves()
     await add_bot_to_logger_group(BOTLOG_CHATID)
     if PM_LOGGER_GROUP_ID != -100:
         await add_bot_to_logger_group(PM_LOGGER_GROUP_ID)
     await startupmessage()
-    Catcheck.sucess = True
-    return
+    await saves()
 
-async def externalrepo():
-    if Config.VCMODE:
+
+async def start_jepthon():
+    try:
+        tbot_id = await tbot.get_me()
+        Config.TG_BOT_USERNAME = f"@{tbot_id.username}"
+       jepiq.tgbot = tbot
+        LOGS.info("•••  جار بدا سورس  ريك ثون •••")
+        CLIENTR = await jepthons(Config.STRING_SESSION, sbb_b, "STRING_SESSION")
+        await tbot.start()
+        total = CLIENTR
+        await load_plugins("plugins")
+        await load_plugins("assistant")
+        LOGS.info(f"تم انتهاء عملية التنصيب بنجاح على سكالينجو")
+        LOGS.info(
+            f"لمعرفة اوامر السورس ارسل {cmdhr}الاوامر\
+        \nمجموعة قناة السورس  https://t.me/rickthon_group"
+        )
+        LOGS.info(f"» عدد جلسات التنصيب الحالية = {str(total)} «")
+        await jepthonstart(total)
+        app = web.AppRunner(await web_server())
+        await app.setup()
+        bind_address = "0.0.0.0"
+        await web.TCPSite(app, bind_address, Config.PORT).start()
+    except Exception as e:
+        LOGS.error(f"{str(e)}")
+        sys.exit()
+
+if Config.VCMODE:
         await install_externalrepo("https://github.com/rick1128/Rickvc", "jepvc", "jepthonvc")
 
-jepiq.loop.run_until_complete(externalrepo())
-jepiq.loop.run_until_complete(startup_process())
-
-if len(sys.argv) not in (1, 3, 4):
-    jepiq.disconnect()
-elif not Catcheck.sucess:
-    if HEROKU_APP is not None:
-        HEROKU_APP.restart()
+   jepiq.disconnect()
 else:
     try:
-        jepiq.run_until_disconnected()
+       jepiq.run_until_disconnected()
     except ConnectionError:
         pass
