@@ -1,1 +1,1 @@
-web: python3 -m jepthon
+worker: python3 -m jepthon
