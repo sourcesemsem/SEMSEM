@@ -1,0 +1,45 @@
+{
+    "name": "RICKTHON USERBOT - سورس ريك ثون",
+    "description": "تنصيب سورس ريك ثون مجانا على منصة سكالينجو",
+    "addons": ["scalingo-postgresql"],
+    "keywords": ["rickthon", "userbot","scalingo"],
+    "repository": "https://github.com/rick1128/rickf",
+  "stack": "container",
+    "env": {
+        "ALIVE_NAME": {
+            "description": "ضع هنا اسم حسابك على التليجرام",
+            "required": true,
+            "value":""
+        },
+        "APP_ID": {
+            "description": "ضع هنا الايبي ايدي الخاص بك",
+            "required": true,
+            "value":""
+        },
+        "API_HASH": {
+            "description": "ضع هنا الايبي هاش الخاص بك",
+            "required": true,
+            "value":""
+        },
+        "STRING_SESSION": {
+            "description": "هنا ضع كود التيرمكس",
+            "required": true
+        },
+        "TG_BOT_TOKEN": {
+            "description": "ضع توكن البوت المساعد الخاص بك",
+            "required": true,
+            "value":""
+        },
+        "TZ": {
+            "description": "ضع هنا المنطقة الزمنيه الخاصه بك القارة وعاصمه بلدك",
+            "required": true,
+            "value": "Asia/Baghdad"
+        },
+        "ENV": {
+            "description": "لا تغيره نهائيا!",
+            "required": true,
+            "value": "ANYTHING"
+        }
+
+    }
+  }
