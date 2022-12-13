@@ -8,7 +8,7 @@ import urllib3
 from git import Repo
 from git.exc import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 
-from jepthon import HEROKU_APP, UPSTREAM_REPO_URL, jepiq, CMD_HELP
+from jepthon import HEROKU_APP, UPSTREAM_REPO_URL, jepiq
 
 from ..Config import Config
 from ..core.logger import logging
@@ -65,7 +65,7 @@ async def gen_chlog(repo, diff):
 
 async def print_changelogs(event, ac_br, changelog):
     changelog_str = (
-        f"**⌯︙قام مطورين السورس بتحديث ريك ثون**\n⌯︙**التـغييرات\n** {changelog}"
+        f"**᯽︙ قام مطورين السورس بتحديث ريك ثون**\n᯽︙ **التـغييرات\n** {changelog}"
     )
     if len(changelog_str) > 4096:
         await event.edit("`Changelog is too big, view the file to see it.`")
@@ -107,80 +107,10 @@ async def update(event, repo, ups_rem, ac_br):
         repo.git.reset("--hard", "FETCH_HEAD")
     await update_requirements()
     jasme = await event.edit(
-        "** ⌯︙تم تحديث سورس ريك ثون بنجاح انتظر قليلا سوف نخبرك بعد اعادة التشغيل !**"
+        "** ᯽︙ تم تحديث سورس ريك ثون بنجاح انتظر قليلا سوف نخبرك بعد اعادة التشغيل !**"
     )
     await event.client.reload(jasme)
 
-
-async def deploy(event, repo, ups_rem, ac_br, txt):
-    if HEROKU_API_KEY is None:
-        return await event.edit("`Please set up`  **HEROKU_API_KEY**  ` Var...`")
-    heroku = heroku3.from_key(HEROKU_API_KEY)
-    heroku_app = None
-    heroku_applications = heroku.apps()
-    if HEROKU_APP_NAME is None:
-        await event.edit(
-            "`Please set up the` **HEROKU_APP_NAME** `Var`"
-            " to be able to deploy your jepthon...`"
-        )
-        repo.__del__()
-        return
-    for app in heroku_applications:
-        if app.name == HEROKU_APP_NAME:
-            heroku_app = app
-            break
-    if heroku_app is None:
-        await event.edit(
-            f"{txt}\n" "`Invalid Heroku credentials for deploying userbot dyno.`"
-        )
-        return repo.__del__()
-    jasme = await event.edit(
-        "`Userbot dyno build in progress, please wait until the process finishes it usually takes 4 to 5 minutes .`"
-    )
-    try:
-        ulist = get_collectionlist_items()
-        for i in ulist:
-            if i == "restart_update":
-                del_keyword_collectionlist("restart_update")
-    except Exception as e:
-        LOGS.error(e)
-    try:
-        add_to_collectionlist("restart_update", [jasme.chat_id, jasme.id])
-    except Exception as e:
-        LOGS.error(e)
-    ups_rem.fetch(ac_br)
-    repo.git.reset("--hard", "FETCH_HEAD")
-    heroku_git_url = heroku_app.git_url.replace(
-        "https://", "https://api:" + HEROKU_API_KEY + "@"
-    )
-    if "heroku" in repo.remotes:
-        remote = repo.remote("heroku")
-        remote.set_url(heroku_git_url)
-    else:
-        remote = repo.create_remote("heroku", heroku_git_url)
-    try:
-        remote.push(refspec="HEAD:refs/heads/master", force=True)
-    except Exception as error:
-        await event.edit(f"{txt}\n**Error log:**\n`{error}`")
-        return repo.__del__()
-    build_status = heroku_app.builds(order_by="created_at", sort="desc")[0]
-    if build_status.status == "failed":
-        return await edit_delete(
-            event, "`Build failed!\n" "Cancelled or there were some errors...`"
-        )
-    try:
-        remote.push("master:main", force=True)
-    except Exception as error:
-        await event.edit(f"{txt}\n**Here is the error log:**\n`{error}`")
-        return repo.__del__()
-    await event.edit("`Deploy was failed. So restarting to update`")
-    delgvar("ipaddress")
-    try:
-        await event.client.disconnect()
-        if HEROKU_APP is not None:
-            HEROKU_APP.restart()
-    except CancelledError:
-        pass
 
 
 @jepiq.ar_cmd(
@@ -195,7 +125,7 @@ async def deploy(event, repo, ups_rem, ac_br, txt):
         },
         "usage": [
             "{tr}update",
-            "{tr}تحديث الان",
+            "{tr}تحديث",
             "{tr}update deploy",
         ],
     },
@@ -203,13 +133,10 @@ async def deploy(event, repo, ups_rem, ac_br, txt):
 async def upstream(event):
     "To check if the bot is up to date and update if specified"
     conf = event.pattern_match.group(1).strip()
-    event = await edit_or_reply(event, "**⌯︙يـتـم البـحـث عـن تـحديثـات سـورس ريك ثون انـتـظـر**")
+    event = await edit_or_reply(event, "**᯽︙ يـتـم البـحـث عـن تـحديثـات سـورس ريك ثون انـتـظـر**")
     off_repo = UPSTREAM_REPO_URL
     force_update = False
-    if HEROKU_API_KEY is None or HEROKU_APP_NAME is None:
-        return await edit_or_reply(
-            event, "`Set the required vars first to update the bot`"
-        )
+    
     try:
         txt = "`Oops.. Updater cannot continue due to "
         txt += "some problems occured`\n\n**LOGTRACE:**\n"
@@ -255,8 +182,7 @@ async def upstream(event):
     # Special case for deploy
     if changelog == "" and not force_update:
         await event.edit(
-            "**⌯︙سورس ريك ثون محدث الى اخر اصدار **\n"
-            f"**قـنـاة سـورس ريك ثون** : @Rickthon"
+            "**᯽︙ 🤍 لا توجد تحديثات الى الان **\n"
         )
         return repo.__del__()
     if conf == "" and not force_update:
@@ -271,13 +197,6 @@ async def upstream(event):
             "`Force-Syncing to latest stable userbot code, please wait...`"
         )
     if conf == "الان":
-        await event.edit("** ⌯︙جار تحـديـث سـورس ريك ثون انـتـظـر قـليـلا 🔨**")
+        await event.edit("** ᯽︙ جار تحـديـث سـورس ريك ثون انـتـظـر قـليـلا 🔨**")
         await update(event, repo, ups_rem, ac_br)
     return
-CMD_HELP.update(
-    {
-        "التحديث": "**`.تحديث`\
-\n للتحقق من وجود تحديثات في السورس ... \
-"
-    }
-)
