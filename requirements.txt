@@ -40,6 +40,7 @@ lottie
 lxml
 lyricsgenius
 moviepy
+motor==3.0.0
 markdown-it-py
 nekos.py
 patool
