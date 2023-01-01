@@ -1,28 +1,36 @@
 from asyncio import sleep
-
-from googletrans import LANGUAGES, Translator
-
+import requests
+import json
+from jepthon.helpers.functions.functions import translate
 from jepthon import jepiq
-
 from ..core.managers import edit_delete, edit_or_reply
-from . import deEmojify
+from ..helpers.functions import soft_deEmojify
 
 
-# https://github.com/ssut/py-googletrans/issues/234#issuecomment-722379788
-async def getTranslate(text, **kwargs):
-    translator = Translator()
-    result = None
-    for _ in range(10):
-        try:
-            result = translator.translate(text, **kwargs)
-        except Exception:
-            translator = Translator()
-            await sleep(0.1)
-    return result
+async def gtrans(text, lan):
+    try:
+        response = translate(text, lang_tgt=lan)
+        if response == 400:
+            return Flase
+    except Exception as er:
+        return f"حدث خطأ \n{er}"
+    return response
 
-
-@jepiq.ar_cmd(pattern="ترجمة ([\s\S]*)")
+@jepiq.ar_cmd(
+    pattern="ترجمة ([\s\S]*)",
+    command=("ترجمة", "tools"),
+    info={
+        "header": "To translate the text to required language.",
+        "note": "For langugage codes check [this link](https://bit.ly/2SRQ6WU)",
+        "usage": [
+            "{tr}tl <language code> ; <text>",
+            "{tr}tl <language codes>",
+        ],
+        "examples": "{tr}tl te ; Catuserbot is one of the popular bot",
+    },
+)
 async def _(event):
+    "To translate the text."
     input_str = event.pattern_match.group(1)
     if event.reply_to_msg_id:
         previous_message = await event.get_reply_message()
@@ -32,16 +40,18 @@ async def _(event):
         lan, text = input_str.split(";")
     else:
         return await edit_delete(
-            event, "`.ترجمة + كود الترجمه` بالرد على رساله", time=5
+            event, "** قم بالرد على الرسالة للترجمة **", time=5
         )
-    text = deEmojify(text.strip())
+    text = soft_deEmojify(text.strip())
     lan = lan.strip()
-    Translator()
+    if len(text) < 2:
+        return await edit_delete(event, "قم بكتابة ما تريد ترجمته!")
     try:
-        translated = await getTranslate(text, dest=lan)
-        after_tr_text = translated.text
-        output_str = f"**تم الترجمه من  {LANGUAGES[translated.src].title()} الى {LANGUAGES[lan].title()}**\
-                \n`{after_tr_text}`"
+        trans = await gtrans(text, lan)
+        if not trans:
+            return await edit_delete(event, "**تحقق من رمز اللغة !, لا يوجد هكذا لغة**")      
+        output_str = f"**تمت الترجمة من ar الى {lan}**\
+                \n`{trans}`"
         await edit_or_reply(event, output_str)
     except Exception as exc:
-        await edit_delete(event, f"**خطأ:**\n`{exc}`", time=5)
+        await edit_delete(event, f"**خطا:**\n`{exc}`", time=5)
