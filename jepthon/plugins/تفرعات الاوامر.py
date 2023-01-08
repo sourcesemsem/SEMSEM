@@ -6,10 +6,10 @@ import random
 from telethon import events
 import random, re
 
-from RICKTHON.utils import admin_cmd
+from jepthon.utils import admin_cmd
 
 import asyncio
-from RICKTHON import jepiq
+from jepthon import jepiq
 
 from ..core.managers import edit_or_reply
 
