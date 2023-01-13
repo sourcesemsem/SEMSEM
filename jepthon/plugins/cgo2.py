@@ -244,3 +244,35 @@ async def bv(event):
         ub = un.replace('[','')
         uv = ub.replace(']','')
         await jepiq.send_message(chat,f'{uv}',parse_mode='htm')
+@jepiq.on(admin_cmd(pattern=r'^\.ins'))
+async def e(event):
+            chat = event.get_chat()
+            h = event.text
+            mes = h.replace('.ins','')
+            await event.edit('انتظر...')
+            u = requests.get(f'https://Infoinsta.romiomatheo.repl.co/?user={username}').json()
+            p = str(u['img'])
+            fs = u['Followers']
+            fg = u['user']
+            h = u['likes']
+            name = u['Bio']
+            id = u['ID']
+           
+            await event.edit(f'''
+    
+                        
+• Name : {name}
+        
+• Followers : {fs}
+        
+• Following : {fg}
+        
+• Likes : {h}
+        
+• iD : {id}
+
+        
+• Region : {r}
+= = = = = = = = = = = = = = = = = = = = 
+By : @I_0_P ,@Huks3 , @i_m_q''')
+                    
